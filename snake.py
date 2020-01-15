@@ -1,42 +1,27 @@
 import numpy as np
-import tkinter as tk
+from tkinter import *
 import random 
+import time 
 
-class Application(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.master = master
+####### Globals #######
+BOARD_WIDTH = 400
+BOARD_HEIGHT = 400
+WIDTH = 10
+DELAY = 100 #(ms)
+#######################
 
-    def create_board(self,snake):
-        w = tk.Canvas(self.master, width=400, height=400)
-        for i in range(0,snake.col):
-            for j in range(0,snake.row):
-                if {'col':i,'row':j} in snake.snake:
-                    w.create_rectangle(i*10+5,j*10+5,i*10+15,j*10+15,fill="green",outline="black")
-                elif {'col':i,'row':j} == snake.food:
-                    w.create_rectangle(i*10+5,j*10+5,i*10+15,j*10+15,fill="red",outline="black")
-                else:
-                    w.create_rectangle(i*10+5,j*10+5,i*10+15,j*10+15,outline="black")
-        w.pack()
-
-    def update(self,grid,snake):
-        pass
-
-class NeuralNetwork:
+class Board(Canvas):
     def __init__(self):
-        pass
+        super().__init__(width=BOARD_WIDTH, height=BOARD_HEIGHT)
+        self.pack()
 
-
-class Snake:
-    def __init__(self,row,col):
-        self.row = row 
-        self.col = col
-        self.snake = [{'col':random.randint(0,col-1),'row':random.randint(0,row-1)}]
-        self.food = {'col':random.randint(0,col-1),'row':random.randint(0,row-1)}
-        pass
+class Snake(Frame):
+    def __init__(self):
+        super().__init__()
+        self.board = Board()
+        self.pack()
 
 if __name__ == "__main__":
-    snake = Snake(20,20)
-    app = Application(master=tk.Tk())
-    app.create_board(snake)
-    app.mainloop()
+    root = Tk()
+    game = Snake()
+    root.mainloop()
