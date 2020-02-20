@@ -1,93 +1,111 @@
 import tkinter
 import random
+import time
 
-class node:
+class cell:
     def __init__(self,x,y):
         self.x = x
         self.y = y
     
     def __str__(self):
-        return "[" + str(self.x) + "," + str(self.y) + "]"
+        return "(" + str(self.x) + "," + str(self.y) + ")"
 
     def draw(self,canvas,fill):
         canvas.create_rectangle(self.x * 20+10,self.y * 20+10,self.x * 20+30,self.y * 20+30,fill=fill)
 
+    def __eq__(self, other):
+        """Overrides the default implementation"""
+        if isinstance(other, cell):
+            return (self.x == other.x and self.y == other.y)
+        return False
 
 class Snake:
-    def __init__(self):
-        self.start()
+    def __init__(self,row,col,master):
+        self.master = master
+        self.row = row 
+        self.col = col
+        self.Init()
+        self.Board()
+        self.Begin()
 
-    def move(self,x,y):
-        for i in reversed(range(1,len(self.snake))):
-            self.snake[i].x = self.snake[i-1].x 
-            self.snake[i].y = self.snake[i-1].y
-        self.snake[0].x += x 
-        self.snake[0].y += y
+    def Board(self):
+        self.canvas = tkinter.Canvas(master,width=420,height=420)
+        self.canvas.pack()
+        self.Draw()
 
-    def checkstatus(self):
-        if(self.snake[0].x < 0 or self.snake[0].x >= 20 or self.snake[0].y < 0 or self.snake[0].y >= 20):
-            self.isAlive = 0
-            print("Game Over!")
-            self.start()
-            return
-        for i in range(1,len(self.snake)):
-            if self.snake[0].x == self.snake[i].x and self.snake[0].y == self.snake[i].y:
-                self.isAlive = 0
-                print("Game Over!")
-                self.start()
-                return
-        if(self.snake[0].x == self.food.x and self.snake[0].y == self.food.y):
+    def Move(self,x,y):
+        if self.CheckStatus(x,y):
+            for i in reversed(range(1,len(self.snake))):
+                self.snake[i].x = self.snake[i-1].x 
+                self.snake[i].y = self.snake[i-1].y
+            self.snake[0].x += x 
+            self.snake[0].y += y
+
+
+    def CheckStatus(self,x,y):
+        x += self.snake[0].x 
+        y += self.snake[0].y
+        snakehead = cell(x,y)
+        if(snakehead.x < 0 or snakehead.x >= row or snakehead.y < 0 or snakehead.y >= col):
+            self.GameOver()
+            return 0
+        if snakehead in self.snake[1:]:
+            self.GameOver()
+            return 0
+        if snakehead == self.food:
             self.score += 1
-            self.snake.append(node(self.food.x,self.food.y))
-            self.food = node(random.randint(0,19),random.randint(0,19))
+            self.snake.append(cell(self.food.x,self.food.y))
+            self.food = cell(random.randint(0,9),random.randint(0,9))
+        self.steps += 1
+        return 1
 
+    def GameOver(self):
+        ## Calculate Fitness
+        ## Store Data
+        print("Game Over!")
+        self.Init()
+        self.Draw()
 
-    def start(self):
-        self.snake = [node(random.randint(0,19),random.randint(0,19))]
-        self.food = node(random.randint(0,19),random.randint(0,19))
-        self.isAlive = 1
+    def Init(self):
+        self.snake = [cell(random.randint(0,9),random.randint(0,9)),cell(random.randint(0,9),random.randint(0,9))]
+        self.food = cell(random.randint(0,9),random.randint(0,9))
         self.score = 0
+        self.steps = 0
 
-    def draw(self,c):
-        c.delete("all")
-        for i in range(0,20):
-            for j in range(0,20):
-                c.create_rectangle(i * 20+10,j * 20+10,i * 20+30,j * 20+30)
-        for i in self.snake:
-            i.draw(c,"green")
-        self.food.draw(c,"red")
+    def Draw(self):
+        self.canvas.delete("all")
+        for i in range(0,10):
+            for j in range(0,10):
+                self.canvas.create_rectangle(i * 20+10,j * 20+10,i * 20+30,j * 20+30)
+        for s in self.snake:
+            s.draw(self.canvas,"green")
+        self.food.draw(self.canvas,"red")
 
-    def moveleft(self,event):
-        print("left")
-        self.move(-1,0)
-        self.draw(c)
-        self.checkstatus()
-    def moveright(self,event):
-        print("right")
-        self.move(1,0)
-        self.draw(c)
-        self.checkstatus()
-    def moveup(self,event):
-        print("up")
-        self.move(0,-1)
-        self.draw(c)
-        self.checkstatus()
-    def movedown(self,event):
-        print("down")
-        self.move(0,1)
-        self.draw(c)
-        self.checkstatus()
+    def Begin(self):
+        m = random.choice(move)
+        if m == 'l':
+            self.Move(-1,0)
+        elif m =='r':
+            self.Move(1,0)
+        elif m =='u':
+            self.Move(0,-1)
+        elif m =='d':
+            self.Move(0,1)
+        self.Draw()
+        self.master.after(1000,self.Begin)    
+
 
 if __name__ == "__main__":
-    game = Snake()
+    #### Hyperparameters ####
+    col = 10
+    row = 10
+    #########################
+
+    ####    Globals     #####
+    move = ['l','r','d','u']
+    #########################
     master = tkinter.Tk()
-    c = tkinter.Canvas(master,width=420,height=420)
-    c.pack()
-    game.draw(c)
-    master.bind("<Left>",game.moveleft)
-    master.bind("<Right>",game.moveright)
-    master.bind("<Up>",game.moveup)
-    master.bind("<Down>",game.movedown)
+    game = Snake(row,col,master)
 
     tkinter.mainloop()
 
