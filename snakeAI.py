@@ -1,6 +1,31 @@
 import tkinter
 import random
 import time
+import numpy as np
+
+class NN:
+    def __init__(self):
+        self.inputlayercnt = 12
+        self.hiddenlayercnt =  18
+        self.hiddenlayers = 2
+        self.outputlayercnt = 4
+        self.weights = [np.random.uniform(size=(self.inputlayercnt,self.hiddenlayercnt)),np.random.uniform(size=(self.hiddenlayercnt,self.hiddenlayercnt)),np.random.uniform(size=(self.hiddenlayercnt,self.outputlayercnt))]
+        self.bias = [np.random.uniform(size=(1,self.hiddenlayercnt)),np.random.uniform(size=(1,self.hiddenlayercnt)),np.random.uniform(size=(1,self.outputlayercnt))]
+    
+    def feedforward(self,i):
+        hl1 = self.sigmoid(np.dot(i,self.weights[0]) + self.bias[0])
+        hl2 = self.sigmoid(np.dot(hl1,self.weights[1]) + self.bias[1])
+        ol = self.sigmoid(np.dot(hl2,self.weights[2]) + self.bias[2])
+        print(ol)
+
+    def sigmoid(self,x):
+        return 1/(1 + np.exp(-x))
+
+    def fitness(self,steps,foods):
+        # Each steps 10 points is rewarded, Each food 10,000 pts is rewarded, On death -1000 pts
+        # 200 Steps is maximum per food count (if over, snake dies) 
+        # Maybe later, add TimeCnt so low steps count + food = higher reward
+        return ((steps * 10) + (foods * 10000)) - 1000
 
 class cell:
     def __init__(self,x,y):
@@ -67,7 +92,7 @@ class Snake:
         self.Draw()
 
     def Init(self):
-        self.snake = [cell(random.randint(0,9),random.randint(0,9)),cell(random.randint(0,9),random.randint(0,9))]
+        self.snake = [cell(random.randint(0,9),random.randint(0,9))]
         self.food = cell(random.randint(0,9),random.randint(0,9))
         self.score = 0
         self.steps = 0
@@ -96,6 +121,8 @@ class Snake:
 
 
 if __name__ == "__main__":
+    nn = NN()
+    nn.feedforward()
     #### Hyperparameters ####
     col = 10
     row = 10
