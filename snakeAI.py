@@ -17,6 +17,7 @@ class NN:
         hl2 = self.sigmoid(np.dot(hl1,self.weights[1]) + self.bias[1])
         ol = self.sigmoid(np.dot(hl2,self.weights[2]) + self.bias[2])
         print(ol)
+        return ol
 
     def sigmoid(self,x):
         return 1/(1 + np.exp(-x))
@@ -46,6 +47,7 @@ class cell:
 
 class Snake:
     def __init__(self,row,col,master):
+        self.nn = NN()
         self.master = master
         self.row = row 
         self.col = col
@@ -107,22 +109,22 @@ class Snake:
         self.food.draw(self.canvas,"red")
 
     def Begin(self):
-        m = random.choice(move)
-        if m == 'l':
+        i = np.random.uniform(size=(1,12))
+        move = list(self.nn.feedforward(i)[0])
+        m = move.index(max(move))
+        if m == 0:
             self.Move(-1,0)
-        elif m =='r':
+        elif m == 1:
             self.Move(1,0)
-        elif m =='u':
+        elif m == 2:
             self.Move(0,-1)
-        elif m =='d':
+        elif m == 3:
             self.Move(0,1)
         self.Draw()
         self.master.after(1000,self.Begin)    
 
 
 if __name__ == "__main__":
-    nn = NN()
-    nn.feedforward()
     #### Hyperparameters ####
     col = 10
     row = 10
