@@ -24,29 +24,29 @@ class NN:
                     np.random.uniform(size=(1,self.hiddenNeuronCnt)),
                     np.random.uniform(size=(1,self.outputNeuronCnt))]
             } for _ in range(self.generationCnt)]
-        print(self.weights[0])
         
     def newGeneration(self):
         fitnessSum = sum(self.fitness)
         self.fitness = [{'fit': x, 'index' : self.fitness.index(x)} for x in self.fitness]
         self.fitness = sorted(self.fitness, key=lambda fit: fit['fit'],reverse=True)
-        for _ in range(self.generationCnt/2):
-            parent1 = random.randint(0,math.floor(fitnessSum))
-            cnt = 0
-            for i in range(len(self.fitness)):
-                cnt += self.fitness[i]["fit"]
-                if parent1 < cnt:
-                    parent1 = self.fitness[i]
-                    break
-            parent2 = random.randint(0,math.floor(fitnessSum))
-            cnt = 0
-            for i in range(len(self.fitness)):
-                cnt += self.fitness[i]["fit"]
-                if parent2 < cnt:
-                    parent2 = self.fitness[i]
-                    break
-            child1tmp = self.weights[parent1["index"]]
-            child2tmp = self.weights[parent2["index"]]
+        print(self.fitness)
+        # for _ in range(self.generationCnt/2):
+        #     parent1 = random.randint(0,math.floor(fitnessSum))
+        #     cnt = 0
+        #     for i in range(len(self.fitness)):
+        #         cnt += self.fitness[i]["fit"]
+        #         if parent1 < cnt:
+        #             parent1 = self.fitness[i]
+        #             break
+        #     parent2 = random.randint(0,math.floor(fitnessSum))
+        #     cnt = 0
+        #     for i in range(len(self.fitness)):
+        #         cnt += self.fitness[i]["fit"]
+        #         if parent2 < cnt:
+        #             parent2 = self.fitness[i]
+        #             break
+        #     child1tmp = self.weights[parent1["index"]]
+        #     child2tmp = self.weights[parent2["index"]]
 
     def feedforward(self,i,index):
         hl1 = self.sigmoid(np.dot(i,self.weights[index]["weights"][0]) + self.weights[index]["bias"][0])
@@ -57,11 +57,11 @@ class NN:
     def sigmoid(self,x):
         return 1/(1 + np.exp(-x))
 
-    def fitness(self,steps,foods):
+    def fitnessTest(self,score,steps):
         # Each steps 10 points is rewarded, Each food 10,000 pts is rewarded, On death -1000 pts
         # 200 Steps is maximum per food count (if over, snake dies) 
         # Maybe later, add TimeCnt so low steps count + food = higher reward
-        fit = ((steps * 10) + (foods * 10000))
+        fit = ((steps * 10) + (score * 10000))
         self.fitness.append(fit)
         return
         
@@ -117,8 +117,7 @@ class Snake:
     def PlaySnake(self):
         self.Init()
         while self.isAlive:
-            move = list(np.random.uniform(size=(1,4)))
-            m = move.index(max(move))
+            m = np.random.randint(0,4)
             if m == 0:
                 self.Move(-1,0)
             elif m == 1:
@@ -130,9 +129,13 @@ class Snake:
             self.CheckStatus()
         return self.score, self.steps
     
+nn = NN()
 game = Snake(10,10)
-score,steps = game.PlaySnake()
-print(score,steps)
+for i in range(nn.generationCnt):
+    score,steps = game.PlaySnake()
+    nn.fitnessTest(score,steps)
+nn.newGeneration()
+
 
 #Goals:
 # for index in range(self.generationCnt):
