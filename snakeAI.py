@@ -26,27 +26,75 @@ class NN:
             } for _ in range(self.generationCnt)]
         
     def newGeneration(self):
+        newWeights = []
         fitnessSum = sum(self.fitness)
         self.fitness = [{'fit': x, 'index' : self.fitness.index(x)} for x in self.fitness]
         self.fitness = sorted(self.fitness, key=lambda fit: fit['fit'],reverse=True)
-        print(self.fitness)
-        # for _ in range(self.generationCnt/2):
-        #     parent1 = random.randint(0,math.floor(fitnessSum))
-        #     cnt = 0
-        #     for i in range(len(self.fitness)):
-        #         cnt += self.fitness[i]["fit"]
-        #         if parent1 < cnt:
-        #             parent1 = self.fitness[i]
-        #             break
-        #     parent2 = random.randint(0,math.floor(fitnessSum))
-        #     cnt = 0
-        #     for i in range(len(self.fitness)):
-        #         cnt += self.fitness[i]["fit"]
-        #         if parent2 < cnt:
-        #             parent2 = self.fitness[i]
-        #             break
-        #     child1tmp = self.weights[parent1["index"]]
-        #     child2tmp = self.weights[parent2["index"]]
+        for _ in range(int(self.generationCnt/2)):
+            parent1 = random.randint(0,math.floor(fitnessSum))
+            cnt = 0
+            for i in range(len(self.fitness)):
+                cnt += self.fitness[i]["fit"]
+                if parent1 < cnt:
+                    parent1 = self.fitness[i]
+                    break
+            parent2 = random.randint(0,math.floor(fitnessSum))
+            cnt = 0
+            for i in range(len(self.fitness)):
+                cnt += self.fitness[i]["fit"]
+                if parent2 < cnt:
+                    parent2 = self.fitness[i]
+                    break
+            child1tmp = self.weights[parent1["index"]]
+            child2tmp = self.weights[parent2["index"]]
+            if np.random.randint(0,100) > 96:
+                newWeights.append( {
+                'weights': [
+                    np.random.uniform(size=(self.inputNeuronCnt,self.hiddenNeuronCnt)),
+                    #np.random.uniform(size=(self.hiddenNeuronCnt,self.hiddenNeuronCnt)) for _ in range(self.hiddenLayerCnt - 1),
+                    np.random.uniform(size=(self.hiddenNeuronCnt,self.hiddenNeuronCnt)),
+                    np.random.uniform(size=(self.hiddenNeuronCnt,self.outputNeuronCnt))], 
+                    'bias':  [
+                    np.random.uniform(size=(1,self.hiddenNeuronCnt)),
+                    np.random.uniform(size=(1,self.hiddenNeuronCnt)),
+                    np.random.uniform(size=(1,self.outputNeuronCnt))]
+                })
+            else:
+                newWeights.append({
+                    'weights':[
+                        child2tmp["weights"][0],
+                        child1tmp["weights"][1],
+                        child2tmp["weights"][2]],
+                    'bias':[
+                        child1tmp["bias"][0],
+                        child2tmp["bias"][1],
+                        child1tmp["bias"][2]]
+                })
+            if np.random.randint(0,100) > 96:
+                newWeights.append( {
+                'weights': [
+                    np.random.uniform(size=(self.inputNeuronCnt,self.hiddenNeuronCnt)),
+                    #np.random.uniform(size=(self.hiddenNeuronCnt,self.hiddenNeuronCnt)) for _ in range(self.hiddenLayerCnt - 1),
+                    np.random.uniform(size=(self.hiddenNeuronCnt,self.hiddenNeuronCnt)),
+                    np.random.uniform(size=(self.hiddenNeuronCnt,self.outputNeuronCnt))], 
+                    'bias':  [
+                    np.random.uniform(size=(1,self.hiddenNeuronCnt)),
+                    np.random.uniform(size=(1,self.hiddenNeuronCnt)),
+                    np.random.uniform(size=(1,self.outputNeuronCnt))]
+                })
+            else:
+                newWeights.append({
+                    'weights':[
+                        child1tmp["weights"][0],
+                        child2tmp["weights"][1],
+                        child1tmp["weights"][2]],
+                    'bias':[
+                        child2tmp["bias"][0],
+                        child1tmp["bias"][1],
+                        child2tmp["bias"][2]]
+                })
+        self.weights = newWeights
+        self.fitness = []
 
     def feedforward(self,i,index):
         hl1 = self.sigmoid(np.dot(i,self.weights[index]["weights"][0]) + self.weights[index]["bias"][0])
@@ -131,10 +179,13 @@ class Snake:
     
 nn = NN()
 game = Snake(10,10)
-for i in range(nn.generationCnt):
-    score,steps = game.PlaySnake()
-    nn.fitnessTest(score,steps)
-nn.newGeneration()
+for abc in range(1000):
+    print("Generation: ",abc+1)
+    for i in range(nn.generationCnt):
+        score,steps = game.PlaySnake()
+        nn.fitnessTest(score,steps)
+        print(i,":", score,steps)
+    nn.newGeneration()
 
 
 #Goals:
